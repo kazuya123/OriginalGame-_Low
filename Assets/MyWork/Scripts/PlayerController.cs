@@ -14,7 +14,6 @@ public class PlayerController : MonoBehaviour {
     public SkinnedMeshRenderer[] model2;  //無敵時点滅モデル
     public bool _isInvisible = false;     //無敵判定
 
-    private EnergyBar HP;
     private Animator  _animator;
     private Rigidbody _rigid;
     private int   _attack= 0;
@@ -42,8 +41,6 @@ public class PlayerController : MonoBehaviour {
     void Start () {
         _rigid = GetComponent<Rigidbody>();
         _animator = GetComponent<Animator>();
-        HP = HPBar.GetComponent<EnergyBar>();
-        HP.ValueF = 1f;
     }
 
     // Update is called once per frame
@@ -390,17 +387,12 @@ public class PlayerController : MonoBehaviour {
             _rigid.velocity = Vector3.zero;
             _rigid.AddForce(-res * 600);
 
-            HP.ValueF -= 0.25f;
 
-            if (HP.ValueF <= 0f){
 
-                _animator.SetBool("Dead", true);
-
-            }else {
 
                 _animator.SetBool("Damege", true);
 
-            }
+
 
 
             StartCoroutine("DamegeCheck");
