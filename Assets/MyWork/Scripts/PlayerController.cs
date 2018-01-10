@@ -14,11 +14,13 @@ public class PlayerController : MonoBehaviour {
     public SkinnedMeshRenderer[] model2;  //無敵時点滅モデル
     public bool _isInvisible = false;     //無敵判定
 
+    private EnergyBar HP;
     private Animator  _animator;
     private Rigidbody _rigid;
     private int   _attack= 0;
-    private int   _jump = 0;
     private int   _hit = 0;
+    private int   _jump = 0;
+    private int   _attackCount = 0;
     private float _jumpTopHeight;　　　//ジャンプの最高地点 プレイヤー専用
     private float _jumpSecond = 0.2f;　//ジャンプの入力受付 プレイヤー専用
     private float _currentSecond;      //ジャンプの時間経過 プレイヤー専用
@@ -40,6 +42,8 @@ public class PlayerController : MonoBehaviour {
     void Start () {
         _rigid = GetComponent<Rigidbody>();
         _animator = GetComponent<Animator>();
+        HP = HPBar.GetComponent<EnergyBar>();
+        HP.ValueF = 1f;
     }
 
     // Update is called once per frame
@@ -74,6 +78,7 @@ public class PlayerController : MonoBehaviour {
         _animator.SetBool("Move", false);
         _animator.SetBool("Run", false);
 
+        Debug.Log(_attackCount + "攻撃回数");
         //Debug.Log(_isGround + "  接地判定");
         //Debug.Log(_attack + "攻撃種類");
         Debug.Log(_isInvisible + "  無敵判定");
@@ -83,84 +88,101 @@ public class PlayerController : MonoBehaviour {
 
 
 //ニュートラル攻撃------------------------------------------------------------------------------
+        //初段攻撃（単発）
         if (Input.GetKeyDown(KeyCode.Space) && _attack == 0 && _isGround && !_animator.GetBool("Move"))
         {
             _animator.SetInteger("Attack", 1);
             _animator.SetBool("isAttack", true);
         }
-
+        //二段攻撃（ループ）
         if (Input.GetKey(KeyCode.Space) && _attack == 1 && _isGround && !_animator.GetBool("Move"))
         {
             _animator.SetInteger("Attack", 2);
         }
-
+        //三段攻撃（ループ）
         if (Input.GetKey(KeyCode.Space) && _attack == 2 && _isGround && !_animator.GetBool("Move"))
         {
             _animator.SetInteger("Attack", 3);
         }
-
-        if (Input.GetKeyDown(KeyCode.Space) && _animator.GetBool("Air"))
+        //空中攻撃
+        if (Input.GetKeyDown(KeyCode.Space) && _animator.GetBool("Air") )
         {
             _animator.SetBool("AirAttack", true);
         }
-
- //方向入力攻撃------------------------------------------------------------------------------
-        if (Input.GetKeyUp(KeyCode.Space) && Input.GetKey(KeyCode.LeftArrow) && _isGround && !_animator.GetBool("Move") && this.transform.rotation.eulerAngles.y > 90)
+        //ダッシュ攻撃
+        if (Input.GetKeyDown(KeyCode.Space) && _animator.GetBool("Run") && _isGround)
         {
-            Debug.Log("左向き前");
-            _animator.SetInteger("Attack", 10);
-            StartCoroutine("Attack_F");
-        }
-
-        if (Input.GetKeyUp(KeyCode.Space) && Input.GetKey(KeyCode.RightArrow) && _isGround && !_animator.GetBool("Move") && this.transform.rotation.eulerAngles.y > 90)
-        {
-            Debug.Log("左向き後");
-            _animator.SetInteger("Attack", 11);
-            StartCoroutine("Attack_B");
-        }
-
-        if (Input.GetKeyUp(KeyCode.Space) && Input.GetKey(KeyCode.UpArrow) && _isGround && !_animator.GetBool("Move") && this.transform.rotation.eulerAngles.y > 90)
-        {
-            Debug.Log("左向き上");
             Debug.Break();
-            _animator.SetInteger("Attack", 12);
-            StartCoroutine("Attack_U");
+            _animator.SetInteger("Attack", 20);
         }
 
-        if (Input.GetKeyUp(KeyCode.Space) && Input.GetKey(KeyCode.DownArrow) && _isGround && !_animator.GetBool("Move") && this.transform.rotation.eulerAngles.y > 90)
+        //方向入力攻撃------------------------------------------------------------------------------
+        if (Input.GetKeyUp(KeyCode.Space)  && _isGround && !_animator.GetBool("Move") && _attackCount >= 3)
         {
-            Debug.Log("左向き下");
-            _animator.SetInteger("Attack", 13);
+            if (this.transform.rotation.eulerAngles.y > 90)
+            {
+                if (Input.GetKey(KeyCode.LeftArrow))
+                {
+                    Debug.Log("左向き前");
+                    _animator.SetInteger("Attack", 10);
+                    StartCoroutine("Attack_F");
+                }
+
+                else if (Input.GetKey(KeyCode.RightArrow))
+                {
+                    Debug.Log("左向き後");
+                    _animator.SetInteger("Attack", 11);
+                    StartCoroutine("Attack_B");
+                }
+
+                else if (Input.GetKey(KeyCode.UpArrow))
+                {
+                    Debug.Log("左向き上");
+                    _animator.SetInteger("Attack", 12);
+                    StartCoroutine("Attack_U");
+                }
+
+                else if (Input.GetKey(KeyCode.DownArrow))
+                {
+                    Debug.Log("左向き下");
+                    _animator.SetInteger("Attack", 13);
+                }
+
+            }
+
+            else if (this.transform.rotation.eulerAngles.y < 90)
+            {
+                if (Input.GetKey(KeyCode.RightArrow))
+                {
+                    Debug.Log("右向き前");
+                    _animator.SetInteger("Attack", 10);
+                    StartCoroutine("Attack_F");
+                }
+
+                else if (Input.GetKey(KeyCode.LeftArrow))
+                {
+                    Debug.Log("右向き後");
+                    _animator.SetInteger("Attack", 11);
+                    StartCoroutine("Attack_B");
+                }
+
+                else if (Input.GetKey(KeyCode.UpArrow))
+                {
+                    Debug.Log("右向き上");
+                    _animator.SetInteger("Attack", 12);
+                    StartCoroutine("Attack_U");
+                }
+
+                else if (Input.GetKey(KeyCode.DownArrow))
+                {
+                    Debug.Log("右向き下");
+                    _animator.SetInteger("Attack", 13);
+                }
+            }
+
         }
 
-        if (Input.GetKeyUp(KeyCode.Space) && Input.GetKey(KeyCode.RightArrow) && _isGround && !_animator.GetBool("Move") && this.transform.rotation.eulerAngles.y < 90)
-        {
-            Debug.Log("右向き前");
-            _animator.SetInteger("Attack", 10);
-            StartCoroutine("Attack_F");
-        }
-
-        if (Input.GetKeyUp(KeyCode.Space) && Input.GetKey(KeyCode.LeftArrow) && _isGround && !_animator.GetBool("Move") && this.transform.rotation.eulerAngles.y < 90)
-        {
-            Debug.Log("右向き後");
-            _animator.SetInteger("Attack", 11);
-            StartCoroutine("Attack_B");
-        }
-
-        if (Input.GetKeyUp(KeyCode.Space) && Input.GetKey(KeyCode.UpArrow) && _isGround && !_animator.GetBool("Move") && this.transform.rotation.eulerAngles.y < 90)
-        {
-            Debug.Log("右向き上");
-            _animator.SetInteger("Attack", 12);
-            StartCoroutine("Attack_U");
-        }
-
-        if (Input.GetKeyUp(KeyCode.Space) && Input.GetKey(KeyCode.DownArrow) && _isGround && !_animator.GetBool("Move") && this.transform.rotation.eulerAngles.y < 90)
-        {
-            Debug.Log("右向き下");
-            _animator.SetInteger("Attack", 13);
-        }
-
-//移動（入力、向き、モーション切り替え）------------------------------------------------------------------------------
+        //移動（入力、向き、モーション切り替え）------------------------------------------------------------------------------
 
         //キーが押された瞬間
         if (Input.GetKeyDown(KeyCode.LeftArrow))
@@ -186,9 +208,8 @@ public class PlayerController : MonoBehaviour {
             dashLeft = false;
         }
 
-        if (Input.GetKey(KeyCode.LeftArrow) && !_isDamege)
+        if (Input.GetKey(KeyCode.LeftArrow) && !_isDamege && !_animator.GetBool("isAttack") && !_animator.GetBool("Dead"))
         {
-            _horizontalInput = Input.GetAxis("Horizontal");
             transform.rotation = Quaternion.Euler(0, 180, 0);
 
             if (!_animator.GetBool("isAttack") && _isGround)
@@ -205,9 +226,8 @@ public class PlayerController : MonoBehaviour {
             }
         }
 
-        if (Input.GetKey(KeyCode.RightArrow) && !_isDamege)
+        if (Input.GetKey(KeyCode.RightArrow) && !_isDamege && !_animator.GetBool("isAttack") && !_animator.GetBool("Dead"))
         {
-            _horizontalInput = Input.GetAxis("Horizontal");
             transform.rotation = Quaternion.Euler(0, 0, 0);
 
             if (!_animator.GetBool("isAttack") && _isGround)
@@ -256,11 +276,14 @@ public class PlayerController : MonoBehaviour {
         }
 
         //空中ジャンプ
-        if (Input.GetKeyDown(KeyCode.UpArrow) && _animator.GetBool("Air"))
+        if (Input.GetKeyDown(KeyCode.UpArrow) && _animator.GetBool("Air") && !_animator.GetBool("useAirJump"))
         {
             _animator.SetBool("AirJump", true);
+
             _rigid.velocity = Vector3.zero;
             _rigid.AddForce(Vector3.up * (jumpForce * 3));
+
+            _animator.SetBool("useAirJump", true);
         }
 
         //落下中
@@ -322,6 +345,7 @@ public class PlayerController : MonoBehaviour {
     {
         _attack = state;
         _jump = state;
+        _attackCount++;
     }
 
     void NewEvent2()
@@ -329,6 +353,7 @@ public class PlayerController : MonoBehaviour {
         _attack = 0;
         _animator.SetBool("isAttack", false);
         _animator.SetInteger("Attack", 0);
+        _attackCount =0;
     }
 
     void HitCheck(int state)
@@ -339,9 +364,7 @@ public class PlayerController : MonoBehaviour {
 //接地、衝突判定------------------------------------------------------------------------------
     void OnCollisionEnter(Collision other)
     {
-        string layerName = LayerMask.LayerToName(other.gameObject.layer);
-
-        if (layerName == "Ground")
+        if (other.gameObject.CompareTag("Ground"))
         {
             _currentSecond = 0;
             _slowdownForce = 0;
@@ -349,7 +372,7 @@ public class PlayerController : MonoBehaviour {
             _jump = 0;
             _animator.SetInteger("Jump", 4);
             _attack = 0;
-            _animator.SetBool("AirJump", false);
+            _animator.SetBool("useAirJump", false);
         }
 
         if (other.gameObject.CompareTag("Enemy") && !_isInvisible)
@@ -367,9 +390,21 @@ public class PlayerController : MonoBehaviour {
             _rigid.velocity = Vector3.zero;
             _rigid.AddForce(-res * 600);
 
-            _animator.SetBool("Damege", true);
+            HP.ValueF -= 0.25f;
+
+            if (HP.ValueF <= 0f){
+
+                _animator.SetBool("Dead", true);
+
+            }else {
+
+                _animator.SetBool("Damege", true);
+
+            }
+
 
             StartCoroutine("DamegeCheck");
+
         }
     }
 
